@@ -1,23 +1,75 @@
 import { StructuredQuestion } from '@/types/tutor';
 
+export const DIAGNOSTIC_POOL = {
+  comparisons: [
+    {
+      id: 'diag-compare-1',
+      prompt:
+        'Which number is greater (further right on a number line): -8 or -3?',
+      correctValue: '-3',
+      options: [
+        { value: '-3', label: '-3 is greater', isCorrect: true },
+        { value: '-8', label: '-8 is greater', isCorrect: false },
+      ],
+    },
+    {
+      id: 'diag-compare-2',
+      prompt:
+        'Which number is greater (further right on a number line): -9 or -4?',
+      correctValue: '-4',
+      options: [
+        { value: '-4', label: '-4 is greater', isCorrect: true },
+        { value: '-9', label: '-9 is greater', isCorrect: false },
+      ],
+    },
+    {
+      id: 'diag-compare-3',
+      prompt:
+        'Which number is greater (further right on a number line): -6 or -2?',
+      correctValue: '-2',
+      options: [
+        { value: '-2', label: '-2 is greater', isCorrect: true },
+        { value: '-6', label: '-6 is greater', isCorrect: false },
+      ],
+    },
+  ],
+  subtractions: [
+    {
+      id: 'diag-sub-1',
+      prompt: 'What do you think -4 - (-2) equals?',
+      correctValue: '-2',
+      options: [
+        { value: '-2', label: '-2', isCorrect: true },
+        { value: '-6', label: '-6', isCorrect: false },
+        { value: '2', label: '+2', isCorrect: false },
+      ],
+    },
+    {
+      id: 'diag-sub-2',
+      prompt: 'What do you think -5 - (-3) equals?',
+      correctValue: '-2',
+      options: [
+        { value: '-2', label: '-2', isCorrect: true },
+        { value: '-8', label: '-8', isCorrect: false },
+        { value: '2', label: '+2', isCorrect: false },
+      ],
+    },
+    {
+      id: 'diag-sub-3',
+      prompt: 'What do you think 2 - (-3) equals?',
+      correctValue: '5',
+      options: [
+        { value: '5', label: '+5', isCorrect: true },
+        { value: '-1', label: '-1', isCorrect: false },
+        { value: '-5', label: '-5', isCorrect: false },
+      ],
+    },
+  ],
+};
+
 export const DIAGNOSTIC_ITEMS = {
-  comparison: {
-    id: 'diag-compare',
-    prompt: 'Which number is greater (further right on a number line): -8 or -3?',
-    options: [
-      { value: '-3', label: '-3 is greater', isCorrect: true },
-      { value: '-8', label: '-8 is greater', isCorrect: false },
-    ],
-  },
-  subtraction: {
-    id: 'diag-sub-neg',
-    prompt: 'What do you think -4 - (-2) equals?',
-    options: [
-      { value: '-2', label: '-2', isCorrect: true },
-      { value: '-6', label: '-6', isCorrect: false },
-      { value: '2', label: '+2', isCorrect: false },
-    ],
-  },
+  comparison: DIAGNOSTIC_POOL.comparisons[0],
+  subtraction: DIAGNOSTIC_POOL.subtractions[0],
 };
 
 export interface PrerequisiteLesson {

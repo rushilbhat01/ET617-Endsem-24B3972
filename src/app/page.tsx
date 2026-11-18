@@ -5,7 +5,7 @@ import { HeaderBar } from '@/components/HeaderBar';
 import { NumberLineTool } from '@/components/NumberLineTool';
 import { CounterBoardTool } from '@/components/CounterBoardTool';
 import {
-  DIAGNOSTIC_ITEMS,
+  DIAGNOSTIC_POOL,
   PREREQUISITE_LESSONS,
   QUESTION_BANK,
 } from '@/lib/questionBank';
@@ -49,7 +49,11 @@ export default function HomePage() {
   const [confirmFresh, setConfirmFresh] = useState(false);
   const [pauseNotice, setPauseNotice] = useState(false);
 
-  // Diagnostic local inputs
+  // Diagnostic local inputs (randomized per session)
+  const [diagPair, setDiagPair] = useState(() => ({
+    comparison: DIAGNOSTIC_POOL.comparisons[0],
+    subtraction: DIAGNOSTIC_POOL.subtractions[0],
+  }));
   const [diagCompare, setDiagCompare] = useState('');
   const [diagSub, setDiagSub] = useState('');
   const [diagConfidence, setDiagConfidence] =
@@ -141,6 +145,19 @@ export default function HomePage() {
   const handleStartFresh = () => {
     clearSavedSession();
     const fresh = createInitialSessionState();
+    const nextComp =
+      DIAGNOSTIC_POOL.comparisons[
+        Math.floor(Math.random() * DIAGNOSTIC_POOL.comparisons.length)
+      ];
+    const nextSub =
+      DIAGNOSTIC_POOL.subtractions[
+        Math.floor(Math.random() * DIAGNOSTIC_POOL.subtractions.length)
+      ];
+    setDiagPair({ comparison: nextComp, subtraction: nextSub });
+    setDiagCompare('');
+    setDiagSub('');
+    setDiagConfidence(null);
+
     const started: TutorSessionState = {
       ...fresh,
       screen: 'DIAGNOSTIC',
@@ -205,8 +222,8 @@ export default function HomePage() {
     e.preventDefault();
     if (!diagCompare || !diagSub || !diagConfidence) return;
 
-    const compCorrect = diagCompare === '-3';
-    const subCorrect = diagSub === '-2';
+    const compCorrect = diagCompare === diagPair.comparison.correctValue;
+    const subCorrect = diagSub === diagPair.subtraction.correctValue;
     const score = (compCorrect ? 1 : 0) + (subCorrect ? 1 : 0);
 
     let gap: TutorSessionState['diagnosticGap'] = 'NONE';
@@ -729,10 +746,10 @@ export default function HomePage() {
               {/* Item 1: Comparison */}
               <fieldset className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <legend className="px-1 text-sm font-semibold text-slate-900">
-                  1. {DIAGNOSTIC_ITEMS.comparison.prompt}
+                  1. {diagPair.comparison.prompt}
                 </legend>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                  {DIAGNOSTIC_ITEMS.comparison.options.map((opt) => (
+                  {diagPair.comparison.options.map((opt) => (
                     <label
                       key={opt.value}
                       className={`flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm font-medium ${
@@ -758,10 +775,10 @@ export default function HomePage() {
               {/* Item 2: Subtracting a negative */}
               <fieldset className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <legend className="px-1 text-sm font-semibold text-slate-900">
-                  2. {DIAGNOSTIC_ITEMS.subtraction.prompt}
+                  2. {diagPair.subtraction.prompt}
                 </legend>
                 <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                  {DIAGNOSTIC_ITEMS.subtraction.options.map((opt) => (
+                  {diagPair.subtraction.options.map((opt) => (
                     <label
                       key={opt.value}
                       className={`flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm font-medium ${
@@ -1035,14 +1052,29 @@ export default function HomePage() {
               )}
 
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={handleRequestHint}
-                  disabled={showHint}
-                  className="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-                >
-                  {showHint ? 'Hint Shown' : 'Need a Gentle Hint?'}
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setState((prev) => ({
+                        ...prev,
+                        screen: 'WARMUP',
+                        partIndex: 2,
+                      }))
+                    }
+                    className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    ← Review Concept Warm-up
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRequestHint}
+                    disabled={showHint}
+                    className="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                  >
+                    {showHint ? 'Hint Shown' : 'Need a Gentle Hint?'}
+                  </button>
+                </div>
 
                 <button
                   type="submit"

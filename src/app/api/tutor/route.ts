@@ -162,6 +162,7 @@ Learner's Explanation: "${learnerExplanation}"`;
       const avoidIds = Array.isArray(body.avoidIds) ? (body.avoidIds as string[]) : [];
 
       const systemPrompt = `You are a Class 7 math curriculum designer creating a single calm, age-appropriate integer operation task.
+IMPORTANT: Every question MUST involve at least one negative integer (for example: -5 + 8, -4 - (-2), 3 - (-4), -7 + 3). NEVER generate purely positive arithmetic like "3 + 4".
 Keep all numbers small (integers between -10 and +10) so they fit on a -10..10 number line or counter board.
 Return strict JSON matching this exact schema:
 {
@@ -195,12 +196,19 @@ Preferred Format: ${preferredFormat === 'NUMBER_LINE' ? 'NUMBER_LINE' : 'STEP_BY
         const raw = await callLLM(systemPrompt, userPrompt);
         if (raw) {
           const candidate = JSON.parse(raw);
-          // Schema + math range check before learner sees it
+          // Schema + math range + negative-integer check before learner sees it
           const ansNum = Number(candidate?.correctAnswer);
           const mathValid =
             Number.isInteger(ansNum) && ansNum >= -10 && ansNum <= 10;
+          const hasNegativeInteger =
+            typeof candidate?.prompt === 'string' &&
+            /-\d+/.test(candidate.prompt);
 
-          if (validateStructuredQuestion(candidate) && mathValid) {
+          if (
+            validateStructuredQuestion(candidate) &&
+            mathValid &&
+            hasNegativeInteger
+          ) {
             return NextResponse.json({
               source: 'AI_LIVE',
               question: {
