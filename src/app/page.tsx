@@ -70,6 +70,7 @@ export default function HomePage() {
   const [showHint, setShowHint] = useState(false);
   const [showWorkedExample, setShowWorkedExample] = useState(false);
   const [workedExampleUsedTask, setWorkedExampleUsedTask] = useState(false);
+  const [attemptsOnCurrentTask, setAttemptsOnCurrentTask] = useState(0);
   const [altToolOverride, setAltToolOverride] = useState<VisualToolType | null>(
     null
   );
@@ -129,6 +130,7 @@ export default function HomePage() {
     setShowHint(false);
     setShowWorkedExample(false);
     setWorkedExampleUsedTask(false);
+    setAttemptsOnCurrentTask(0);
     setAltToolOverride(null);
     setPrereqCheckChoice(null);
     questionShownAtRef.current = Date.now();
@@ -471,6 +473,20 @@ export default function HomePage() {
     }
 
     setAiSourceLabel(sourceTag);
+
+    const nextAttempts = evaluation.isCorrect ? 0 : attemptsOnCurrentTask + 1;
+    setAttemptsOnCurrentTask(nextAttempts);
+
+    if (!evaluation.isCorrect && nextAttempts >= 3) {
+      evaluation = {
+        ...evaluation,
+        feedbackTitle: 'Here Is the Complete Solution',
+        feedbackMessage:
+          'You gave this 3 thoughtful tries—let us look at the full worked-out solution together before moving on.',
+        decisionReason:
+          'After 2 wrong attempts, the 3rd wrong attempt reveals the complete solution directly.',
+      };
+    }
 
     setState((prev) => {
       const counts = { ...prev.misconceptionCounts };
@@ -1254,9 +1270,30 @@ export default function HomePage() {
                 {state.lastEvaluation.decisionReason}
               </p>
 
-              {/* Outcome B & Remedial Content for Wrong Answers: Interactive Visual Tool + Question-Specific Steps */}
-              {(state.lastEvaluation.outcome === 'ALTERNATIVE_EXPLANATION' ||
-                state.lastEvaluation.outcome === 'GENTLE_RETRY') && (
+              {/* 3rd Wrong Attempt: Direct Complete Solution */}
+              {!state.lastEvaluation.isCorrect && attemptsOnCurrentTask >= 3 && (
+                <div className="mt-5 rounded-xl border border-emerald-300 bg-emerald-50 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-emerald-900">
+                    Complete Solution (Attempt 3 of 3)
+                  </p>
+                  <p className="mt-2 text-sm font-bold text-slate-900">
+                    Answer:{' '}
+                    {currentQuestion.expectedRewrite
+                      ? `${currentQuestion.expectedRewrite} = ${currentQuestion.correctAnswer}`
+                      : String(currentQuestion.correctAnswer)}
+                  </p>
+                  <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs text-slate-800">
+                    {currentQuestion.solutionSteps.map((s, idx) => (
+                      <li key={idx}>{s}</li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+
+              {/* Outcome B & Remedial Content for Wrong Answers (Attempts 1 & 2) */}
+              {attemptsOnCurrentTask < 3 &&
+                (state.lastEvaluation.outcome === 'ALTERNATIVE_EXPLANATION' ||
+                  state.lastEvaluation.outcome === 'GENTLE_RETRY') && (
                 <div className="mt-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-slate-900">
@@ -1355,8 +1392,9 @@ export default function HomePage() {
               )}
 
               <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
-                {(state.lastEvaluation.outcome === 'ALTERNATIVE_EXPLANATION' ||
-                  state.lastEvaluation.outcome === 'GENTLE_RETRY') && (
+                {attemptsOnCurrentTask < 3 &&
+                  (state.lastEvaluation.outcome === 'ALTERNATIVE_EXPLANATION' ||
+                    state.lastEvaluation.outcome === 'GENTLE_RETRY') && (
                   <button
                     type="button"
                     onClick={() =>
