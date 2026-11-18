@@ -23,3 +23,5 @@ yarn-error.log*
 
 # Exam reference file
 ET 617-2026.docx
+.vercel
+.env*
