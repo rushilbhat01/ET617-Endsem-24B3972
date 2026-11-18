@@ -403,21 +403,33 @@ export default function HomePage() {
       const normExpected = currentQuestion.expectedRewrite
         .replace(/\s+/g, '')
         .replace(/^\+/, '');
-      if (normRewrite !== normExpected) {
-        evaluation = {
-          isCorrect: false,
-          misconception: evaluation.isCorrect
-            ? 'NON_CONCEPTUAL_SLIP'
-            : evaluation.misconception,
-          outcome: 'GENTLE_RETRY',
-          feedbackTitle: 'Check Step 1 First',
-          feedbackMessage: evaluation.isCorrect
-            ? `Your final value (${rawAnswer}) is right, but check your Step 1 rewrite ("${rewriteInput.trim()}"). Remember: subtracting a negative is the same as adding its positive!`
-            : `Take another look at Step 1 ("${rewriteInput.trim()}") and Step 2 together—subtracting a negative turns into adding a positive.`,
-          recommendedTool: 'COUNTER_BOARD',
-          decisionReason:
-            'Step 1 rewrite did not match the equivalent addition expression; offering a calm retry.',
-        };
+      const validRewrites =
+        currentQuestion.id === 'q-step-2'
+          ? [normExpected, '-5+8+(-2)', '-5+8-2']
+          : [normExpected];
+
+      if (!validRewrites.includes(normRewrite)) {
+        if (evaluation.isCorrect) {
+          evaluation = {
+            isCorrect: false,
+            misconception: 'NON_CONCEPTUAL_SLIP',
+            outcome: 'ALTERNATIVE_EXPLANATION',
+            feedbackTitle: 'Check Step 1 — Let Us Walk Through It',
+            feedbackMessage: `Your final value (${rawAnswer}) is right, but check your Step 1 rewrite ("${rewriteInput.trim()}"). Remember: subtracting a negative is the same as adding its positive!`,
+            recommendedTool: 'COUNTER_BOARD',
+            decisionReason:
+              'Step 1 rewrite did not match the equivalent addition expression; showing remedial walkthrough for this question.',
+          };
+        } else {
+          evaluation = {
+            ...evaluation,
+            outcome:
+              evaluation.outcome === 'GENTLE_RETRY'
+                ? 'ALTERNATIVE_EXPLANATION'
+                : evaluation.outcome,
+            feedbackMessage: `Check both Step 1 ("${rewriteInput.trim()}") and Step 2: ${evaluation.feedbackMessage}`,
+          };
+        }
       }
     }
 
@@ -544,15 +556,6 @@ export default function HomePage() {
 
   const handleContinueAfterFeedback = async () => {
     const ev = state.lastEvaluation;
-
-    // Gentle retry stays on same question
-    if (ev?.outcome === 'GENTLE_RETRY') {
-      setState((prev) => ({
-        ...prev,
-        screen: 'PRACTICE',
-      }));
-      return;
-    }
 
     // Check if 10-minute session goal (5+ tasks) is complete
     if (state.completedTaskIds.length >= TARGET_SESSION_TASKS) {
@@ -1251,12 +1254,13 @@ export default function HomePage() {
                 {state.lastEvaluation.decisionReason}
               </p>
 
-              {/* Outcome B: Alternative Visual Explanation */}
-              {state.lastEvaluation.outcome === 'ALTERNATIVE_EXPLANATION' && (
+              {/* Outcome B & Remedial Content for Wrong Answers: Interactive Visual Tool + Question-Specific Steps */}
+              {(state.lastEvaluation.outcome === 'ALTERNATIVE_EXPLANATION' ||
+                state.lastEvaluation.outcome === 'GENTLE_RETRY') && (
                 <div className="mt-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-slate-900">
-                      Let Us See It With a Visual Tool
+                      Remedial Guide: How to Solve This Question
                     </h2>
                     <button
                       type="button"
@@ -1289,13 +1293,16 @@ export default function HomePage() {
 
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                     <p className="text-xs font-semibold text-slate-800">
-                      Step-by-step walkthrough:
+                      Step-by-step guide for this question:
                     </p>
                     <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-slate-700">
                       {currentQuestion.solutionSteps.map((s, idx) => (
                         <li key={idx}>{s}</li>
                       ))}
                     </ul>
+                    <p className="mt-2.5 text-xs text-sky-900">
+                      <strong>Tip:</strong> {currentQuestion.hint}
+                    </p>
                   </div>
                 </div>
               )}
@@ -1348,7 +1355,8 @@ export default function HomePage() {
               )}
 
               <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
-                {state.lastEvaluation.outcome === 'ALTERNATIVE_EXPLANATION' && (
+                {(state.lastEvaluation.outcome === 'ALTERNATIVE_EXPLANATION' ||
+                  state.lastEvaluation.outcome === 'GENTLE_RETRY') && (
                   <button
                     type="button"
                     onClick={() =>
@@ -1370,8 +1378,6 @@ export default function HomePage() {
                 >
                   {isSubmitting
                     ? 'Preparing Next Task...'
-                    : state.lastEvaluation.outcome === 'GENTLE_RETRY'
-                    ? 'Try This Question Again →'
                     : state.completedTaskIds.length >= TARGET_SESSION_TASKS
                     ? 'View 10-Minute Session Summary →'
                     : 'Next Adaptive Task →'}
