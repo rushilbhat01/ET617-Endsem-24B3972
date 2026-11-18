@@ -68,6 +68,7 @@ export default function HomePage() {
   const [writtenInput, setWrittenInput] = useState('');
   const [showHint, setShowHint] = useState(false);
   const [showWorkedExample, setShowWorkedExample] = useState(false);
+  const [workedExampleUsedTask, setWorkedExampleUsedTask] = useState(false);
   const [altToolOverride, setAltToolOverride] = useState<VisualToolType | null>(
     null
   );
@@ -126,6 +127,7 @@ export default function HomePage() {
     setWrittenInput('');
     setShowHint(false);
     setShowWorkedExample(false);
+    setWorkedExampleUsedTask(false);
     setAltToolOverride(null);
     setPrereqCheckChoice(null);
     questionShownAtRef.current = Date.now();
@@ -321,15 +323,28 @@ export default function HomePage() {
   const handleToggleWorkedExample = () => {
     if (!showWorkedExample) {
       setShowWorkedExample(true);
+      const shouldCountScaffold = !workedExampleUsedTask;
+      if (shouldCountScaffold) setWorkedExampleUsedTask(true);
       setState((prev) =>
-        appendEvents(prev, [
+        appendEvents(
           {
-            timestamp: new Date().toISOString(),
-            type: 'HINT_REQUESTED',
-            questionId: currentQuestion.id,
-            details: 'Worked example viewed',
+            ...prev,
+            hintsUsedCurrentTask: shouldCountScaffold
+              ? prev.hintsUsedCurrentTask + 1
+              : prev.hintsUsedCurrentTask,
           },
-        ])
+          [
+            {
+              timestamp: new Date().toISOString(),
+              type: 'HINT_REQUESTED',
+              questionId: currentQuestion.id,
+              hintsUsed: shouldCountScaffold
+                ? prev.hintsUsedCurrentTask + 1
+                : prev.hintsUsedCurrentTask,
+              details: 'Worked example viewed',
+            },
+          ]
+        )
       );
     } else {
       setShowWorkedExample(false);
@@ -472,6 +487,10 @@ export default function HomePage() {
           difficulty: nextDifficulty,
           completedTaskIds,
           consecutiveCorrect: nextConsecutiveCorrect,
+          consecutiveScaffoldTasks:
+            prev.hintsUsedCurrentTask > 0
+              ? prev.consecutiveScaffoldTasks + 1
+              : 0,
           lastMisconception: nextLastMisc,
           consecutiveSameMisconception: nextSameMisc,
           misconceptionCounts: counts,
@@ -544,6 +563,14 @@ export default function HomePage() {
       state.completedTaskIds.length === 1 ||
       state.completedTaskIds.length === 3
     ) {
+      const seenPool = [...state.customQuestions, ...QUESTION_BANK];
+      const avoidIds = Array.from(
+        new Set([...state.completedTaskIds, currentQuestion.id])
+      );
+      const avoidPrompts = seenPool
+        .filter((q) => avoidIds.includes(q.id))
+        .map((q) => q.prompt);
+
       setIsSubmitting(true);
       try {
         const res = await fetch('/api/tutor', {
@@ -557,7 +584,8 @@ export default function HomePage() {
               state.lastMisconception === 'M1_MAGNITUDE_SIGN'
                 ? 'NUMBER_LINE'
                 : 'STEP_BY_STEP',
-            avoidIds: state.completedTaskIds,
+            avoidIds,
+            avoidPrompts,
           }),
         });
         if (res.ok) {
@@ -593,6 +621,10 @@ export default function HomePage() {
             ev?.outcome === 'PREREQUISITE_INSTRUCTION'
               ? 0
               : prev.consecutiveSameMisconception,
+          consecutiveScaffoldTasks:
+            ev?.outcome === 'PREREQUISITE_INSTRUCTION'
+              ? 0
+              : prev.consecutiveScaffoldTasks,
         },
         [
           ...(ev?.outcome === 'PREREQUISITE_INSTRUCTION'

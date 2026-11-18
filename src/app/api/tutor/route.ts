@@ -160,6 +160,9 @@ Learner's Explanation: "${learnerExplanation}"`;
       const focusMisconception = String(body.focusMisconception ?? 'NONE');
       const preferredFormat = (body.preferredFormat ?? 'STEP_BY_STEP') as QuestionFormat;
       const avoidIds = Array.isArray(body.avoidIds) ? (body.avoidIds as string[]) : [];
+      const avoidPrompts = Array.isArray(body.avoidPrompts)
+        ? (body.avoidPrompts as string[]).map((p) => p.trim().toLowerCase())
+        : [];
 
       const systemPrompt = `You are a Class 7 math curriculum designer creating a single calm, age-appropriate integer operation task.
 IMPORTANT: Every question MUST involve at least one negative integer (for example: -5 + 8, -4 - (-2), 3 - (-4), -7 + 3). NEVER generate purely positive arithmetic like "3 + 4".
@@ -190,7 +193,8 @@ Return strict JSON matching this exact schema:
 
       const userPrompt = `Target Difficulty: ${targetDifficulty}
 Focus Misconception: ${focusMisconception}
-Preferred Format: ${preferredFormat === 'NUMBER_LINE' ? 'NUMBER_LINE' : 'STEP_BY_STEP'}`;
+Preferred Format: ${preferredFormat === 'NUMBER_LINE' ? 'NUMBER_LINE' : 'STEP_BY_STEP'}
+Do NOT repeat any of these already-seen prompts: ${avoidPrompts.join(' | ') || 'none'}`;
 
       try {
         const raw = await callLLM(systemPrompt, userPrompt);
@@ -204,10 +208,15 @@ Preferred Format: ${preferredFormat === 'NUMBER_LINE' ? 'NUMBER_LINE' : 'STEP_BY
             typeof candidate?.prompt === 'string' &&
             /-\d+/.test(candidate.prompt);
 
+          const isDuplicatePrompt =
+            typeof candidate?.prompt === 'string' &&
+            avoidPrompts.includes(candidate.prompt.trim().toLowerCase());
+
           if (
             validateStructuredQuestion(candidate) &&
             mathValid &&
-            hasNegativeInteger
+            hasNegativeInteger &&
+            !isDuplicatePrompt
           ) {
             return NextResponse.json({
               source: 'AI_LIVE',
@@ -223,10 +232,18 @@ Preferred Format: ${preferredFormat === 'NUMBER_LINE' ? 'NUMBER_LINE' : 'STEP_BY
         // Fall through to curated fallback
       }
 
-      // Curated fallback from QUESTION_BANK
+      // Curated fallback from QUESTION_BANK (never repeat seen IDs or prompts)
       const fallbackQ =
         QUESTION_BANK.find(
-          (q) => q.difficulty === targetDifficulty && !avoidIds.includes(q.id)
+          (q) =>
+            q.difficulty === targetDifficulty &&
+            !avoidIds.includes(q.id) &&
+            !avoidPrompts.includes(q.prompt.trim().toLowerCase())
+        ) ??
+        QUESTION_BANK.find(
+          (q) =>
+            !avoidIds.includes(q.id) &&
+            !avoidPrompts.includes(q.prompt.trim().toLowerCase())
         ) ??
         QUESTION_BANK.find((q) => !avoidIds.includes(q.id)) ??
         QUESTION_BANK[0];

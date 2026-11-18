@@ -124,6 +124,7 @@ export interface TutorSessionState {
   customQuestions: StructuredQuestion[];
   completedTaskIds: string[];
   consecutiveCorrect: number;
+  consecutiveScaffoldTasks: number;
   lastMisconception: MisconceptionType;
   consecutiveSameMisconception: number;
   misconceptionCounts: Record<MisconceptionType, number>;

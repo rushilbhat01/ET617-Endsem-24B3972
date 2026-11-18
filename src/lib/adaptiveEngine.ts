@@ -146,6 +146,25 @@ export function buildEvaluationResult(
   let feedbackTitle = 'Nice work!';
   let decisionReason = '';
 
+  const usedScaffoldTwiceInARow =
+    state.hintsUsedCurrentTask > 0 && state.consecutiveScaffoldTasks >= 1;
+
+  if (usedScaffoldTwiceInARow) {
+    return {
+      isCorrect,
+      misconception,
+      outcome: 'PREREQUISITE_INSTRUCTION',
+      feedbackTitle: 'Quick 60-Second Prerequisite Reset',
+      feedbackMessage: isCorrect
+        ? `${question.feedback.correct} Let us also do a quick 60-second refresher so you feel confident without needing hints.`
+        : question.feedback[misconception === 'NONE' ? 'UNCLASSIFIED' : misconception],
+      recommendedTool,
+      explanationQuality,
+      decisionReason:
+        'You used a hint or similar example on 2 tasks in a row—let us take 60 seconds to lock in the core idea.',
+    };
+  }
+
   if (isCorrect) {
     const adequateExplanation =
       question.format !== 'WRITTEN_EXPLANATION' ||
@@ -346,11 +365,33 @@ export function selectNextQuestion(
   targetDifficulty: 1 | 2 | 3
 ): StructuredQuestion {
   const pool = [...state.customQuestions, ...QUESTION_BANK];
-  const uncompleted = pool.filter(
-    (q) => !state.completedTaskIds.includes(q.id) && q.id !== state.currentQuestionId
+  const currentQ = pool.find((q) => q.id === state.currentQuestionId);
+  const seenPrompts = new Set(
+    pool
+      .filter(
+        (q) =>
+          state.completedTaskIds.includes(q.id) ||
+          q.id === state.currentQuestionId
+      )
+      .map((q) => q.prompt.trim().toLowerCase())
   );
 
-  const candidates = uncompleted.length > 0 ? uncompleted : pool;
+  const uncompleted = pool.filter(
+    (q) =>
+      !state.completedTaskIds.includes(q.id) &&
+      q.id !== state.currentQuestionId &&
+      !seenPrompts.has(q.prompt.trim().toLowerCase())
+  );
+
+  const candidates =
+    uncompleted.length > 0
+      ? uncompleted
+      : pool.filter(
+          (q) =>
+            q.id !== state.currentQuestionId &&
+            q.prompt.trim().toLowerCase() !==
+              currentQ?.prompt.trim().toLowerCase()
+        );
 
   // Prefer questions matching targetDifficulty and formats not yet seen
   const seenFormats = new Set(

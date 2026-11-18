@@ -26,6 +26,7 @@ export function createInitialSessionState(): TutorSessionState {
     customQuestions: [],
     completedTaskIds: [],
     consecutiveCorrect: 0,
+    consecutiveScaffoldTasks: 0,
     lastMisconception: 'NONE',
     consecutiveSameMisconception: 0,
     misconceptionCounts: emptyMisconceptionCounts(),
