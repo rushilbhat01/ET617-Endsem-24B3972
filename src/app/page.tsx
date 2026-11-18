@@ -53,7 +53,7 @@ export default function HomePage() {
   const [diagCompare, setDiagCompare] = useState('');
   const [diagSub, setDiagSub] = useState('');
   const [diagConfidence, setDiagConfidence] =
-    useState<ConfidenceLevel>('A_LITTLE_SURE');
+    useState<ConfidenceLevel | null>(null);
 
   // Practice local inputs
   const [numberLineVal, setNumberLineVal] = useState<number>(0);
@@ -201,7 +201,7 @@ export default function HomePage() {
 
   const handleDiagnosticSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!diagCompare || !diagSub) return;
+    if (!diagCompare || !diagSub || !diagConfidence) return;
 
     const compCorrect = diagCompare === '-3';
     const subCorrect = diagSub === '-2';
@@ -812,7 +812,7 @@ export default function HomePage() {
 
               <button
                 type="submit"
-                disabled={!diagCompare || !diagSub}
+                disabled={!diagCompare || !diagSub || !diagConfidence}
                 className="w-full rounded-xl bg-sky-600 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-700 disabled:bg-slate-300 disabled:text-slate-500 sm:w-auto"
               >
                 Continue to Concept Warm-up →
