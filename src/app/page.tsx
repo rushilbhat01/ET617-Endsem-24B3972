@@ -67,6 +67,7 @@ export default function HomePage() {
   const [selectedDebugId, setSelectedDebugId] = useState('');
   const [writtenInput, setWrittenInput] = useState('');
   const [showHint, setShowHint] = useState(false);
+  const [showWorkedExample, setShowWorkedExample] = useState(false);
   const [altToolOverride, setAltToolOverride] = useState<VisualToolType | null>(
     null
   );
@@ -124,6 +125,7 @@ export default function HomePage() {
     setSelectedDebugId('');
     setWrittenInput('');
     setShowHint(false);
+    setShowWorkedExample(false);
     setAltToolOverride(null);
     setPrereqCheckChoice(null);
     questionShownAtRef.current = Date.now();
@@ -310,6 +312,47 @@ export default function HomePage() {
             type: 'HINT_REQUESTED',
             questionId: currentQuestion.id,
             hintsUsed: prev.hintsUsedCurrentTask + 1,
+          },
+        ]
+      )
+    );
+  };
+
+  const handleToggleWorkedExample = () => {
+    if (!showWorkedExample) {
+      setShowWorkedExample(true);
+      setState((prev) =>
+        appendEvents(prev, [
+          {
+            timestamp: new Date().toISOString(),
+            type: 'HINT_REQUESTED',
+            questionId: currentQuestion.id,
+            details: 'Worked example viewed',
+          },
+        ])
+      );
+    } else {
+      setShowWorkedExample(false);
+    }
+  };
+
+  const handleSkipQuestion = () => {
+    const altQ = selectNextQuestion(state, state.difficulty);
+    resetQuestionInputs(altQ);
+    setState((prev) =>
+      appendEvents(
+        {
+          ...prev,
+          currentQuestionId: altQ.id,
+          hintsUsedCurrentTask: 0,
+        },
+        [
+          {
+            timestamp: new Date().toISOString(),
+            type: 'QUESTION_SHOWN',
+            questionId: altQ.id,
+            format: altQ.format,
+            details: `Skipped ${currentQuestion.id} for now`,
           },
         ]
       )
@@ -1051,6 +1094,27 @@ export default function HomePage() {
                 </div>
               )}
 
+              {/* Worked Example Card (Faded Scaffolding) */}
+              {showWorkedExample && (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3.5 text-xs text-emerald-950">
+                  <p className="font-semibold">
+                    Similar Solved Example (Different Numbers):
+                  </p>
+                  {currentQuestion.prerequisite === 'ORDERING_DIRECTION' ? (
+                    <p className="mt-1">
+                      Example: <strong>-2 + 4</strong> → Start at{' '}
+                      <strong>-2</strong>, step 4 places RIGHT (-1, 0, +1, +2)
+                      → Answer: <strong>+2</strong>.
+                    </p>
+                  ) : (
+                    <p className="mt-1">
+                      Example: <strong>-3 - (-1)</strong> → Removing 1 red (−1)
+                      tile is the same as adding +1: <strong>-3 + 1 = -2</strong>.
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <button
@@ -1064,15 +1128,29 @@ export default function HomePage() {
                     }
                     className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
                   >
-                    ← Review Concept Warm-up
+                    ← Review Warm-up
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleToggleWorkedExample}
+                    className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-900 hover:bg-emerald-100"
+                  >
+                    {showWorkedExample ? 'Hide Example' : 'See Similar Example'}
                   </button>
                   <button
                     type="button"
                     onClick={handleRequestHint}
                     disabled={showHint}
-                    className="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                    className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
                   >
-                    {showHint ? 'Hint Shown' : 'Need a Gentle Hint?'}
+                    {showHint ? 'Hint Shown' : 'Gentle Hint'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSkipQuestion}
+                    className="rounded-lg border border-transparent px-2.5 py-2 text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                  >
+                    Try Another Question
                   </button>
                 </div>
 
@@ -1308,6 +1386,48 @@ export default function HomePage() {
                   <strong>{state.eventLog.length}</strong>
                 </li>
               </ul>
+            </div>
+
+            {/* Pre-Post Confidence Check (L5 Self-Efficacy) */}
+            <div className="mt-5 rounded-xl border border-sky-200 bg-sky-50/70 p-4">
+              <p className="text-xs font-semibold text-slate-900">
+                How are you feeling about negative numbers now?
+              </p>
+              <div className="mt-2.5 grid gap-2 sm:grid-cols-3">
+                {(
+                  [
+                    { id: 'NOT_SURE', label: 'Not sure yet' },
+                    { id: 'A_LITTLE_SURE', label: 'A little sure' },
+                    { id: 'QUITE_SURE', label: 'Quite sure' },
+                  ] as const
+                ).map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() =>
+                      setState((prev) => ({ ...prev, postConfidence: c.id }))
+                    }
+                    className={`rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${
+                      state.postConfidence === c.id
+                        ? 'border-sky-600 bg-sky-600 text-white'
+                        : 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50'
+                    }`}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+              {state.postConfidence && state.confidence && (
+                <p className="mt-2.5 text-xs text-sky-950">
+                  <strong>Your confidence journey:</strong> Started at{' '}
+                  <em>{state.confidence.replace(/_/g, ' ').toLowerCase()}</em> →
+                  Ended at{' '}
+                  <em>
+                    {state.postConfidence.replace(/_/g, ' ').toLowerCase()}
+                  </em>
+                  . Every calm step counts!
+                </p>
+              )}
             </div>
 
             <div className="mt-6 flex flex-wrap gap-3">

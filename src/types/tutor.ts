@@ -116,6 +116,7 @@ export interface TutorSessionState {
   partIndex: 1 | 2 | 3 | 4;
   difficulty: DifficultyLevel;
   confidence: ConfidenceLevel | null;
+  postConfidence: ConfidenceLevel | null;
   diagnosticScore: number | null;
   diagnosticGap: 'ORDERING_DIRECTION' | 'ZERO_PAIRS_SUBTRACTION' | 'NONE' | null;
   warmUpTool: VisualToolType;

@@ -174,12 +174,22 @@ export function buildEvaluationResult(
         : 'First correct response in streak; one more for a level up.';
     }
 
+    const strategyPraise: Record<StructuredQuestion['format'], string> = {
+      NUMBER_LINE: 'Nice strategy—checking direction on the number line!',
+      COUNTER_BOARD: 'Great strategy—using zero pairs to see what cancels!',
+      STEP_BY_STEP: 'Solid method—rewriting step by step keeps signs clear!',
+      ERROR_SPOTTING: 'Sharp debugging—spotting sign traps builds real mastery!',
+      WRITTEN_EXPLANATION: 'Clear thinking—putting the why into your own words!',
+    };
+
     return {
       isCorrect: true,
       misconception: 'NONE',
       outcome,
       feedbackTitle,
-      feedbackMessage: customFeedbackMessage ?? question.feedback.correct,
+      feedbackMessage:
+        customFeedbackMessage ??
+        `${question.feedback.correct} (${strategyPraise[question.format]})`,
       recommendedTool,
       explanationQuality,
       decisionReason,

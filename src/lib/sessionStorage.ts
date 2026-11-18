@@ -18,6 +18,7 @@ export function createInitialSessionState(): TutorSessionState {
     partIndex: 1,
     difficulty: 1,
     confidence: null,
+    postConfidence: null,
     diagnosticScore: null,
     diagnosticGap: null,
     warmUpTool: 'NUMBER_LINE',
