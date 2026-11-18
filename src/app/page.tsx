@@ -9,7 +9,11 @@ import {
   PREREQUISITE_LESSONS,
   QUESTION_BANK,
 } from '@/lib/questionBank';
-import { evaluateAndDecide, selectNextQuestion } from '@/lib/adaptiveEngine';
+import {
+  buildEvaluationResult,
+  evaluateAndDecide,
+  selectNextQuestion,
+} from '@/lib/adaptiveEngine';
 import {
   clearSavedSession,
   createInitialSessionState,
@@ -65,6 +69,8 @@ export default function HomePage() {
   const [prereqCheckChoice, setPrereqCheckChoice] = useState<number | null>(
     null
   );
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [aiSourceLabel, setAiSourceLabel] = useState<string | null>(null);
 
   const questionShownAtRef = useRef<number>(0);
 
@@ -285,8 +291,10 @@ export default function HomePage() {
     );
   };
 
-  const handlePracticeSubmit = (e: React.FormEvent) => {
+  const handlePracticeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     let rawAnswer = '';
     if (currentQuestion.format === 'NUMBER_LINE') {
       rawAnswer = String(numberLineVal);
@@ -303,7 +311,44 @@ export default function HomePage() {
     if (!rawAnswer) return;
 
     const responseTimeMs = Date.now() - questionShownAtRef.current;
-    const evaluation = evaluateAndDecide(currentQuestion, rawAnswer, state);
+    let evaluation = evaluateAndDecide(currentQuestion, rawAnswer, state);
+    let sourceTag: string | null = null;
+
+    if (currentQuestion.format === 'WRITTEN_EXPLANATION') {
+      setIsSubmitting(true);
+      try {
+        const res = await fetch('/api/tutor', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'EVALUATE_EXPLANATION',
+            question: currentQuestion,
+            learnerExplanation: rawAnswer,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          sourceTag =
+            data.source === 'AI_LIVE'
+              ? 'AI Explanation Evaluator'
+              : 'Fallback Evaluator (Local)';
+          evaluation = buildEvaluationResult(
+            currentQuestion,
+            Boolean(data.isCorrect),
+            data.misconception,
+            state,
+            data.explanationQuality,
+            data.feedbackMessage
+          );
+        }
+      } catch {
+        sourceTag = 'Fallback Evaluator (Offline)';
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+
+    setAiSourceLabel(sourceTag);
 
     setState((prev) => {
       const counts = { ...prev.misconceptionCounts };
@@ -383,7 +428,7 @@ export default function HomePage() {
     });
   };
 
-  const handleContinueAfterFeedback = () => {
+  const handleContinueAfterFeedback = async () => {
     const ev = state.lastEvaluation;
 
     // Gentle retry stays on same question
@@ -416,7 +461,46 @@ export default function HomePage() {
       return;
     }
 
-    const nextQ = selectNextQuestion(state, state.difficulty);
+    let nextQ = selectNextQuestion(state, state.difficulty);
+    let generatedCustom: StructuredQuestion | null = null;
+
+    // Request an AI-generated adaptive question when levelling up or mid-session
+    if (
+      ev?.outcome === 'HARDER_QUESTION' ||
+      state.completedTaskIds.length === 3
+    ) {
+      setIsSubmitting(true);
+      try {
+        const res = await fetch('/api/tutor', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'GENERATE_QUESTION',
+            targetDifficulty: state.difficulty,
+            focusMisconception: state.lastMisconception,
+            preferredFormat:
+              state.lastMisconception === 'M1_MAGNITUDE_SIGN'
+                ? 'NUMBER_LINE'
+                : 'STEP_BY_STEP',
+            avoidIds: state.completedTaskIds,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.question?.id) {
+            nextQ = data.question as StructuredQuestion;
+            if (data.source === 'AI_LIVE') {
+              generatedCustom = nextQ;
+            }
+          }
+        }
+      } catch {
+        // Keep curated fallback nextQ
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+
     resetQuestionInputs(nextQ);
 
     setState((prev) =>
@@ -426,6 +510,9 @@ export default function HomePage() {
           screen: 'PRACTICE',
           partIndex: 3,
           currentQuestionId: nextQ.id,
+          customQuestions: generatedCustom
+            ? [...prev.customQuestions, generatedCustom]
+            : prev.customQuestions,
           hintsUsedCurrentTask: 0,
           consecutiveSameMisconception:
             ev?.outcome === 'PREREQUISITE_INSTRUCTION'
@@ -929,9 +1016,10 @@ export default function HomePage() {
 
                 <button
                   type="submit"
-                  className="rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-sky-700"
+                  disabled={isSubmitting}
+                  className="rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-sky-700 disabled:bg-slate-400"
                 >
-                  Check My Thinking
+                  {isSubmitting ? 'Checking...' : 'Check My Thinking'}
                 </button>
               </div>
             </form>
@@ -956,6 +1044,7 @@ export default function HomePage() {
                 </span>
                 <span className="text-xs text-slate-500">
                   Classification: {state.lastEvaluation.misconception}
+                  {aiSourceLabel ? ` · ${aiSourceLabel}` : ''}
                 </span>
               </div>
 
@@ -1076,10 +1165,13 @@ export default function HomePage() {
               <div className="mt-6 flex justify-end">
                 <button
                   type="button"
+                  disabled={isSubmitting}
                   onClick={handleContinueAfterFeedback}
-                  className="rounded-xl bg-sky-600 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-700"
+                  className="rounded-xl bg-sky-600 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-700 disabled:bg-slate-400"
                 >
-                  {state.lastEvaluation.outcome === 'GENTLE_RETRY'
+                  {isSubmitting
+                    ? 'Preparing Next Task...'
+                    : state.lastEvaluation.outcome === 'GENTLE_RETRY'
                     ? 'Try This Question Again →'
                     : state.completedTaskIds.length >= TARGET_SESSION_TASKS
                     ? 'View 10-Minute Session Summary →'

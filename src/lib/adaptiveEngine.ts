@@ -126,6 +126,134 @@ export function evaluateWrittenExplanationLocally(
       };
 }
 
+export function buildEvaluationResult(
+  question: StructuredQuestion,
+  isCorrect: boolean,
+  misconception: MisconceptionType,
+  state: TutorSessionState,
+  explanationQuality?: 'ADEQUATE' | 'PARTIAL' | 'MISCONCEPTION',
+  customFeedbackMessage?: string
+): EvaluationResult {
+  const recommendedTool = recommendedToolForMisconception(
+    misconception,
+    question.prerequisite
+  );
+
+  // Evidence-based adaptive decision rule
+  let outcome: AdaptiveOutcome = 'CONTINUE_SAME_LEVEL';
+  let feedbackTitle = 'Nice work!';
+  let decisionReason = '';
+
+  if (isCorrect) {
+    const adequateExplanation =
+      question.format !== 'WRITTEN_EXPLANATION' ||
+      explanationQuality === 'ADEQUATE';
+
+    if (
+      adequateExplanation &&
+      state.hintsUsedCurrentTask <= 1 &&
+      state.consecutiveCorrect >= 1 &&
+      state.difficulty < 3
+    ) {
+      outcome = 'HARDER_QUESTION';
+      feedbackTitle = 'Level Up — Ready for a Harder Question';
+      decisionReason =
+        '2+ correct responses in a row with minimal hints and solid reasoning.';
+    } else {
+      outcome = 'CONTINUE_SAME_LEVEL';
+      feedbackTitle = 'Great Job — Keep Going!';
+      decisionReason =
+        state.hintsUsedCurrentTask > 1
+          ? 'Correct with multiple hints; consolidating at the same level.'
+          : state.difficulty >= 3
+          ? 'Already at the highest challenge tier.'
+          : 'First correct response in streak; one more for a level up.';
+    }
+
+    return {
+      isCorrect: true,
+      misconception: 'NONE',
+      outcome,
+      feedbackTitle,
+      feedbackMessage: customFeedbackMessage ?? question.feedback.correct,
+      recommendedTool,
+      explanationQuality,
+      decisionReason,
+    };
+  }
+
+  // Incorrect response handling
+  if (
+    misconception === 'NON_CONCEPTUAL_SLIP' ||
+    misconception === 'UNCLASSIFIED'
+  ) {
+    outcome = 'GENTLE_RETRY';
+    feedbackTitle =
+      misconception === 'NON_CONCEPTUAL_SLIP'
+        ? 'Close! Quick Sign & Count Check'
+        : 'Let Us Try That Step Again';
+    decisionReason =
+      misconception === 'NON_CONCEPTUAL_SLIP'
+        ? 'Off by 1 / minor slip — no conceptual gap diagnosed; offering a calm retry.'
+        : 'Answer did not match a known misconception pattern; avoiding false diagnosis.';
+
+    return {
+      isCorrect: false,
+      misconception,
+      outcome,
+      feedbackTitle,
+      feedbackMessage: customFeedbackMessage ?? question.feedback[misconception],
+      recommendedTool,
+      explanationQuality,
+      decisionReason,
+    };
+  }
+
+  // Clear M1 or M2 misconception
+  const nextSameCount =
+    state.lastMisconception === misconception
+      ? state.consecutiveSameMisconception + 1
+      : 1;
+
+  const hasDiagnosticGap =
+    (misconception === 'M1_MAGNITUDE_SIGN' &&
+      state.diagnosticGap === 'ORDERING_DIRECTION') ||
+    (misconception === 'M2_DOUBLE_NEGATIVE' &&
+      state.diagnosticGap === 'ZERO_PAIRS_SUBTRACTION');
+
+  if (nextSameCount >= 2 || (hasDiagnosticGap && state.completedTaskIds.length === 0)) {
+    outcome = 'PREREQUISITE_INSTRUCTION';
+    feedbackTitle = 'Quick 60-Second Prerequisite Reset';
+    decisionReason =
+      nextSameCount >= 2
+        ? `Same misconception (${misconception}) appeared ${nextSameCount} times in a row.`
+        : `Diagnostic check-in indicated a foundational gap (${state.diagnosticGap}).`;
+  } else {
+    outcome = 'ALTERNATIVE_EXPLANATION';
+    feedbackTitle = 'Let Us Look at This Visually';
+    decisionReason = `First clear occurrence of ${misconception}; switching to ${
+      recommendedTool === 'NUMBER_LINE' ? 'Number Line' : 'Zero-Pair Counters'
+    } scaffold.`;
+  }
+
+  const feedbackMessage =
+    customFeedbackMessage ??
+    (misconception === 'NONE'
+      ? question.feedback.correct
+      : question.feedback[misconception]);
+
+  return {
+    isCorrect: false,
+    misconception,
+    outcome,
+    feedbackTitle,
+    feedbackMessage,
+    recommendedTool,
+    explanationQuality,
+    decisionReason,
+  };
+}
+
 /**
  * Classifies a learner response and applies the evidence-based P4 adaptive decision rule.
  */
@@ -177,123 +305,13 @@ export function evaluateAndDecide(
     }
   }
 
-  const recommendedTool = recommendedToolForMisconception(
+  return buildEvaluationResult(
+    question,
+    isCorrect,
     misconception,
-    question.prerequisite
+    state,
+    explanationQuality
   );
-
-  // Evidence-based adaptive decision rule
-  let outcome: AdaptiveOutcome = 'CONTINUE_SAME_LEVEL';
-  let feedbackTitle = 'Nice work!';
-  let decisionReason = '';
-
-  if (isCorrect) {
-    const adequateExplanation =
-      question.format !== 'WRITTEN_EXPLANATION' ||
-      explanationQuality === 'ADEQUATE';
-
-    if (
-      adequateExplanation &&
-      state.hintsUsedCurrentTask <= 1 &&
-      state.consecutiveCorrect >= 1 &&
-      state.difficulty < 3
-    ) {
-      outcome = 'HARDER_QUESTION';
-      feedbackTitle = 'Level Up — Ready for a Harder Question';
-      decisionReason =
-        '2+ correct responses in a row with minimal hints and solid reasoning.';
-    } else {
-      outcome = 'CONTINUE_SAME_LEVEL';
-      feedbackTitle = 'Great Job — Keep Going!';
-      decisionReason =
-        state.hintsUsedCurrentTask > 1
-          ? 'Correct with multiple hints; consolidating at the same level.'
-          : state.difficulty >= 3
-          ? 'Already at the highest challenge tier.'
-          : 'First correct response in streak; one more for a level up.';
-    }
-
-    return {
-      isCorrect: true,
-      misconception: 'NONE',
-      outcome,
-      feedbackTitle,
-      feedbackMessage: question.feedback.correct,
-      recommendedTool,
-      explanationQuality,
-      decisionReason,
-    };
-  }
-
-  // Incorrect response handling
-  if (
-    misconception === 'NON_CONCEPTUAL_SLIP' ||
-    misconception === 'UNCLASSIFIED'
-  ) {
-    outcome = 'GENTLE_RETRY';
-    feedbackTitle =
-      misconception === 'NON_CONCEPTUAL_SLIP'
-        ? 'Close! Quick Sign & Count Check'
-        : 'Let Us Try That Step Again';
-    decisionReason =
-      misconception === 'NON_CONCEPTUAL_SLIP'
-        ? 'Off by 1 / minor slip — no conceptual gap diagnosed; offering a calm retry.'
-        : 'Answer did not match a known misconception pattern; avoiding false diagnosis.';
-
-    return {
-      isCorrect: false,
-      misconception,
-      outcome,
-      feedbackTitle,
-      feedbackMessage: question.feedback[misconception],
-      recommendedTool,
-      explanationQuality,
-      decisionReason,
-    };
-  }
-
-  // Clear M1 or M2 misconception
-  const nextSameCount =
-    state.lastMisconception === misconception
-      ? state.consecutiveSameMisconception + 1
-      : 1;
-
-  const hasDiagnosticGap =
-    (misconception === 'M1_MAGNITUDE_SIGN' &&
-      state.diagnosticGap === 'ORDERING_DIRECTION') ||
-    (misconception === 'M2_DOUBLE_NEGATIVE' &&
-      state.diagnosticGap === 'ZERO_PAIRS_SUBTRACTION');
-
-  if (nextSameCount >= 2 || (hasDiagnosticGap && state.completedTaskIds.length === 0)) {
-    outcome = 'PREREQUISITE_INSTRUCTION';
-    feedbackTitle = 'Quick 60-Second Prerequisite Reset';
-    decisionReason =
-      nextSameCount >= 2
-        ? `Same misconception (${misconception}) appeared ${nextSameCount} times in a row.`
-        : `Diagnostic check-in indicated a foundational gap (${state.diagnosticGap}).`;
-  } else {
-    outcome = 'ALTERNATIVE_EXPLANATION';
-    feedbackTitle = 'Let Us Look at This Visually';
-    decisionReason = `First clear occurrence of ${misconception}; switching to ${
-      recommendedTool === 'NUMBER_LINE' ? 'Number Line' : 'Zero-Pair Counters'
-    } scaffold.`;
-  }
-
-  const feedbackMessage =
-    misconception === 'NONE'
-      ? question.feedback.correct
-      : question.feedback[misconception];
-
-  return {
-    isCorrect: false,
-    misconception,
-    outcome,
-    feedbackTitle,
-    feedbackMessage,
-    recommendedTool,
-    explanationQuality,
-    decisionReason,
-  };
 }
 
 /**
