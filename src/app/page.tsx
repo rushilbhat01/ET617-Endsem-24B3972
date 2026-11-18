@@ -944,7 +944,7 @@ export default function HomePage() {
                         type="text"
                         value={rewriteInput}
                         onChange={(e) => setRewriteInput(e.target.value)}
-                        placeholder="e.g., -4 + 2"
+                        placeholder="Write as an addition expression..."
                         className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
                       />
                     </div>
@@ -958,7 +958,7 @@ export default function HomePage() {
                       inputMode="text"
                       value={numericInput}
                       onChange={(e) => setNumericInput(e.target.value)}
-                      placeholder="Enter your integer answer (e.g. -2)"
+                      placeholder="Enter a single integer..."
                       required
                       className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
                     />

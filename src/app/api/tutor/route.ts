@@ -172,7 +172,7 @@ Return strict JSON matching this exact schema:
   "prompt": "clear, friendly question prompt",
   "hint": "1 calm hint",
   "startValue": number (only if NUMBER_LINE, between -9 and 9),
-  "rewritePrompt": "Step 1: Rewrite ... (only if STEP_BY_STEP)",
+  "rewritePrompt": "Step 1: Rewrite the expression using addition (only if STEP_BY_STEP; NEVER reveal the rewritten answer or signs like '5 + 3')",
   "correctAnswer": number (integer between -10 and 10),
   "solutionSteps": ["step 1", "step 2"],
   "misconceptionMappings": { "<wrongAnswer>": "M1_MAGNITUDE_SIGN" | "M2_DOUBLE_NEGATIVE" },

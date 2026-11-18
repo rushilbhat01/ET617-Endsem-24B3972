@@ -176,7 +176,7 @@ export const QUESTION_BANK: StructuredQuestion[] = [
     concept: 'Subtracting a negative integer from a negative integer',
     prompt: 'Solve -4 - (-2) in two calm steps.',
     hint: 'Subtracting -2 is the same as adding +2 (removing 2 red tiles). Rewrite it first!',
-    rewritePrompt: 'Step 1: Rewrite -4 - (-2) as addition (e.g., -4 + 2)',
+    rewritePrompt: 'Step 1: Rewrite -4 - (-2) using addition',
     expectedRewrite: '-4+2',
     correctAnswer: -2,
     solutionSteps: [
@@ -329,7 +329,7 @@ export const QUESTION_BANK: StructuredQuestion[] = [
     concept: 'Multi-step integer expression with subtracting a negative',
     prompt: 'Challenge: Solve -5 - (-8) + (-2) step by step.',
     hint: 'First rewrite -5 - (-8) as -5 + 8. Then add -2.',
-    rewritePrompt: 'Step 1: Rewrite -5 - (-8) as addition (e.g., -5 + 8)',
+    rewritePrompt: 'Step 1: Rewrite -5 - (-8) using addition',
     expectedRewrite: '-5+8',
     correctAnswer: 1,
     solutionSteps: [
