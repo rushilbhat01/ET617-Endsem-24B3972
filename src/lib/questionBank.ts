@@ -72,6 +72,50 @@ export const DIAGNOSTIC_ITEMS = {
   subtraction: DIAGNOSTIC_POOL.subtractions[0],
 };
 
+export function generateRandomDiagnosticPair() {
+  // Pick two distinct negative integers between -12 and -1
+  const n1 = -(Math.floor(Math.random() * 11) + 2); // -2 to -12
+  let n2 = -(Math.floor(Math.random() * 11) + 1); // -1 to -11
+  while (n2 === n1) {
+    n2 = -(Math.floor(Math.random() * 11) + 1);
+  }
+  const greater = Math.max(n1, n2);
+  const comparison = {
+    id: `diag-cmp-${n1}-${n2}`,
+    prompt: `Which number is greater (further right on a number line): ${n1} or ${n2}?`,
+    correctValue: String(greater),
+    options: [
+      { value: String(n1), label: `${n1} is greater`, isCorrect: n1 === greater },
+      { value: String(n2), label: `${n2} is greater`, isCorrect: n2 === greater },
+    ],
+  };
+
+  // Pick a - (-b) where a in [-7..4], b in [1..5]
+  const a = Math.floor(Math.random() * 12) - 7;
+  const b = Math.floor(Math.random() * 5) + 1;
+  const correct = a + b;
+  const m2Wrong = a - b;
+  let thirdOpt = -correct;
+  if (thirdOpt === correct || thirdOpt === m2Wrong) {
+    thirdOpt = correct + 1;
+  }
+  const fmt = (n: number) => (n > 0 ? `+${n}` : String(n));
+  const rawOpts = [
+    { value: String(correct), label: fmt(correct), isCorrect: true },
+    { value: String(m2Wrong), label: fmt(m2Wrong), isCorrect: false },
+    { value: String(thirdOpt), label: fmt(thirdOpt), isCorrect: false },
+  ].sort(() => Math.random() - 0.5);
+
+  const subtraction = {
+    id: `diag-sub-${a}-${b}`,
+    prompt: `What do you think ${a} - (-${b}) equals?`,
+    correctValue: String(correct),
+    options: rawOpts,
+  };
+
+  return { comparison, subtraction };
+}
+
 export interface PrerequisiteLesson {
   id: 'ORDERING_DIRECTION' | 'ZERO_PAIRS_SUBTRACTION';
   title: string;

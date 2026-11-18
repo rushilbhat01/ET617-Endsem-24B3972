@@ -6,6 +6,7 @@ import { NumberLineTool } from '@/components/NumberLineTool';
 import { CounterBoardTool } from '@/components/CounterBoardTool';
 import {
   DIAGNOSTIC_POOL,
+  generateRandomDiagnosticPair,
   PREREQUISITE_LESSONS,
   QUESTION_BANK,
 } from '@/lib/questionBank';
@@ -149,15 +150,7 @@ export default function HomePage() {
   const handleStartFresh = () => {
     clearSavedSession();
     const fresh = createInitialSessionState();
-    const nextComp =
-      DIAGNOSTIC_POOL.comparisons[
-        Math.floor(Math.random() * DIAGNOSTIC_POOL.comparisons.length)
-      ];
-    const nextSub =
-      DIAGNOSTIC_POOL.subtractions[
-        Math.floor(Math.random() * DIAGNOSTIC_POOL.subtractions.length)
-      ];
-    setDiagPair({ comparison: nextComp, subtraction: nextSub });
+    setDiagPair(generateRandomDiagnosticPair());
     setDiagCompare('');
     setDiagSub('');
     setDiagConfidence(null);
@@ -400,6 +393,34 @@ export default function HomePage() {
       state,
       responseTimeMs
     );
+
+    // Grade Step 1 rewrite in STEP_BY_STEP format if expectedRewrite is defined
+    if (
+      currentQuestion.format === 'STEP_BY_STEP' &&
+      currentQuestion.expectedRewrite
+    ) {
+      const normRewrite = rewriteInput.replace(/\s+/g, '').replace(/^\+/, '');
+      const normExpected = currentQuestion.expectedRewrite
+        .replace(/\s+/g, '')
+        .replace(/^\+/, '');
+      if (normRewrite !== normExpected) {
+        evaluation = {
+          isCorrect: false,
+          misconception: evaluation.isCorrect
+            ? 'NON_CONCEPTUAL_SLIP'
+            : evaluation.misconception,
+          outcome: 'GENTLE_RETRY',
+          feedbackTitle: 'Check Step 1 First',
+          feedbackMessage: evaluation.isCorrect
+            ? `Your final value (${rawAnswer}) is right, but check your Step 1 rewrite ("${rewriteInput.trim()}"). Remember: subtracting a negative is the same as adding its positive!`
+            : `Take another look at Step 1 ("${rewriteInput.trim()}") and Step 2 together—subtracting a negative turns into adding a positive.`,
+          recommendedTool: 'COUNTER_BOARD',
+          decisionReason:
+            'Step 1 rewrite did not match the equivalent addition expression; offering a calm retry.',
+        };
+      }
+    }
+
     let sourceTag: string | null = null;
 
     if (currentQuestion.format === 'WRITTEN_EXPLANATION') {
@@ -557,11 +578,10 @@ export default function HomePage() {
     let nextQ = selectNextQuestion(state, state.difficulty);
     let generatedCustom: StructuredQuestion | null = null;
 
-    // Request an AI-generated adaptive question when levelling up or on tasks 2 & 4
+    // Request an AI-generated adaptive question when levelling up on NUMBER_LINE or STEP_BY_STEP, preserving 5-format diversity
     if (
-      ev?.outcome === 'HARDER_QUESTION' ||
-      state.completedTaskIds.length === 1 ||
-      state.completedTaskIds.length === 3
+      ev?.outcome === 'HARDER_QUESTION' &&
+      (nextQ.format === 'NUMBER_LINE' || nextQ.format === 'STEP_BY_STEP')
     ) {
       const seenPool = [...state.customQuestions, ...QUESTION_BANK];
       const avoidIds = Array.from(
@@ -580,10 +600,7 @@ export default function HomePage() {
             action: 'GENERATE_QUESTION',
             targetDifficulty: state.difficulty,
             focusMisconception: state.lastMisconception,
-            preferredFormat:
-              state.lastMisconception === 'M1_MAGNITUDE_SIGN'
-                ? 'NUMBER_LINE'
-                : 'STEP_BY_STEP',
+            preferredFormat: nextQ.format,
             avoidIds,
             avoidPrompts,
           }),
@@ -1044,6 +1061,7 @@ export default function HomePage() {
                         value={rewriteInput}
                         onChange={(e) => setRewriteInput(e.target.value)}
                         placeholder="Write as an addition expression..."
+                        required
                         className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
                       />
                     </div>
