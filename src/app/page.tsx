@@ -221,10 +221,16 @@ export default function HomePage() {
     }
 
     const startDiff: 1 | 2 = score === 2 && diagConfidence === 'QUITE_SURE' ? 2 : 1;
-    const firstQ =
-      warmUpTool === 'NUMBER_LINE'
-        ? QUESTION_BANK[0]
-        : QUESTION_BANK[1];
+    const matchingPool = QUESTION_BANK.filter(
+      (q) =>
+        q.difficulty === startDiff &&
+        (warmUpTool === 'NUMBER_LINE'
+          ? q.prerequisite === 'ORDERING_DIRECTION'
+          : q.prerequisite === 'ZERO_PAIRS_SUBTRACTION')
+    );
+    const fallbackPool = QUESTION_BANK.filter((q) => q.difficulty === startDiff);
+    const pool = matchingPool.length > 0 ? matchingPool : fallbackPool;
+    const firstQ = pool[Math.floor(Math.random() * pool.length)] ?? QUESTION_BANK[0];
 
     setState((prev) =>
       appendEvents(
@@ -472,9 +478,10 @@ export default function HomePage() {
     let nextQ = selectNextQuestion(state, state.difficulty);
     let generatedCustom: StructuredQuestion | null = null;
 
-    // Request an AI-generated adaptive question when levelling up or mid-session
+    // Request an AI-generated adaptive question when levelling up or on tasks 2 & 4
     if (
       ev?.outcome === 'HARDER_QUESTION' ||
+      state.completedTaskIds.length === 1 ||
       state.completedTaskIds.length === 3
     ) {
       setIsSubmitting(true);

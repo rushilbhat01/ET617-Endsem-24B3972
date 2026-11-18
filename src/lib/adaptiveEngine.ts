@@ -349,13 +349,16 @@ export function selectNextQuestion(
       .map((q) => q.format)
   );
 
-  const exactDiffUnseenFormat = candidates.find(
+  const pickRandom = (arr: StructuredQuestion[]) =>
+    arr[Math.floor(Math.random() * arr.length)];
+
+  const exactDiffUnseenFormat = candidates.filter(
     (q) => q.difficulty === targetDifficulty && !seenFormats.has(q.format)
   );
-  if (exactDiffUnseenFormat) return exactDiffUnseenFormat;
+  if (exactDiffUnseenFormat.length > 0) return pickRandom(exactDiffUnseenFormat);
 
-  const exactDiff = candidates.find((q) => q.difficulty === targetDifficulty);
-  if (exactDiff) return exactDiff;
+  const exactDiff = candidates.filter((q) => q.difficulty === targetDifficulty);
+  if (exactDiff.length > 0) return pickRandom(exactDiff);
 
-  return candidates[0];
+  return pickRandom(candidates);
 }
