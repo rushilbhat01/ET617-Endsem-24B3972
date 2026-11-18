@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ET 617-2026 Endsem Report — 24B3972</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 14mm 15mm 16mm 15mm;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      color: #0f172a;
+      line-height: 1.5;
+      font-size: 10.5pt;
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+    }
+    .cover-banner {
+      background: linear-gradient(135deg, #0369a1 0%, #0f172a 100%);
+      color: #ffffff;
+      padding: 22px 24px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+    }
+    .cover-banner .eyebrow {
+      font-size: 8.5pt;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #bae6fd;
+      font-weight: 700;
+    }
+    .cover-banner h1 {
+      margin: 6px 0 4px 0;
+      font-size: 20pt;
+      line-height: 1.2;
+    }
+    .cover-banner p {
+      margin: 0;
+      font-size: 10pt;
+      color: #e0f2fe;
+    }
+    .id-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .id-card {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #f8fafc;
+    }
+    .id-card .label {
+      font-size: 7.5pt;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #475569;
+      font-weight: 700;
+    }
+    .id-card .val {
+      font-size: 10pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin-top: 2px;
+    }
+    h2 {
+      font-size: 13pt;
+      color: #0369a1;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 4px;
+      margin: 18px 0 10px 0;
+      page-break-after: avoid;
+    }
+    h3 {
+      font-size: 10.5pt;
+      color: #1e293b;
+      margin: 12px 0 6px 0;
+      page-break-after: avoid;
+    }
+    p, li { margin: 4px 0; }
+    ul, ol { padding-left: 18px; margin: 4px 0 10px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0 14px 0;
+      font-size: 9pt;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 7px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #f1f5f9;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 8.5pt;
+      background: #f1f5f9;
+      padding: 1px 4px;
+      border-radius: 4px;
+      color: #0f172a;
+    }
+    .pill-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .pill-card {
+      border-radius: 8px;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      page-break-inside: avoid;
+    }
+    .pill-card.green { border-left: 4px solid #059669; background: #ecfdf5; }
+    .pill-card.amber { border-left: 4px solid #d97706; background: #fffbeb; }
+    .pill-card.sky   { border-left: 4px solid #0284c7; background: #f0f9ff; }
+    .pill-card.slate { border-left: 4px solid #475569; background: #f8fafc; }
+    .pill-card .title {
+      font-weight: 700;
+      font-size: 9.5pt;
+      margin-bottom: 3px;
+    }
+    .screenshot-box {
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 10px;
+      background: #f8fafc;
+      margin: 10px 0 14px 0;
+      page-break-inside: avoid;
+    }
+    .screenshot-box img {
+      width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+    }
+    .screenshot-caption {
+      font-size: 8.5pt;
+      color: #475569;
+      margin-top: 6px;
+      font-weight: 600;
+    }
+    .callout {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-left: 4px solid #0284c7;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin: 8px 0;
+      font-size: 9.5pt;
+      page-break-inside: avoid;
+    }
+    .page-break { page-break-before: always; }
+  </style>
+</head>
+<body>
+
+  <div class="cover-banner">
+    <div class="eyebrow">ET 617-2026 · End-Semester Examination Report</div>
+    <h1>IntegerEase: Calm 10-Minute Adaptive Integer Tutor</h1>
+    <p>Live App: https://et617-24b3972.vercel.app &nbsp;·&nbsp; Repo: https://github.com/rushilbhat01/ET617-Endsem-24B3972</p>
+  </div>
+
+  <h2>Identity Card</h2>
+  <div class="id-grid">
+    <div class="id-card">
+      <div class="label">Identity Token</div>
+      <div class="val">24B3972</div>
+    </div>
+    <div class="id-card">
+      <div class="label">Exam Card</div>
+      <div class="val">P4 · T1 · L5 · C4</div>
+    </div>
+    <div class="id-card">
+      <div class="label">Topic (T1)</div>
+      <div class="val">Class 7 Integers</div>
+    </div>
+    <div class="id-card">
+      <div class="label">Constraint (C4)</div>
+      <div class="val">10-Min Sessions</div>
+    </div>
+  </div>
+  <table>
+    <tr><th>Card Field</th><th>Specification</th></tr>
+    <tr><td><strong>P4 — Problem</strong></td><td>Adaptive tutor with automatic question generation (5 formats, explanation evaluation, 3-way decision rule)</td></tr>
+    <tr><td><strong>T1 — Topic</strong></td><td>Integers: operations with negative numbers (Class 7)</td></tr>
+    <tr><td><strong>L5 — Learner</strong></td><td>Learner repeating the topic after failing it once, high anxiety and low self-efficacy</td></tr>
+    <tr><td><strong>C4 — Constraint</strong></td><td>10-minute sessions: complete sequence fits in 10 minutes; stop and resume where left off</td></tr>
+  </table>
+
+  <h2>D1. Educational Problem, Learning Outcomes &amp; Context of Use</h2>
+  <p>
+    Class 7 learners who are repeating <em>Integers: operations with negative numbers</em> often rely on memorized, fragile sign rules (such as <em>"two negatives make a negative"</em>) rather than understanding direction on a number line or zero-pair cancellation. When they apply these rules inconsistently, they make recurring sign errors—especially when subtracting negative numbers or comparing two negative values. Traditional practice platforms mark these errors with punitive red indicators and generic hints, which deepens math anxiety and lowers self-efficacy. An adaptive tutor that diagnoses <em>why</em> a learner got an integer operation wrong, switches to visual representations when needed, and structures practice into calm 10-minute sessions can rebuild both conceptual understanding and confidence.
+  </p>
+  <h3>Measurable Learning Outcomes</h3>
+  <ol>
+    <li><strong>Compare &amp; Represent</strong> positive and negative integers on a number line and with two-color counters to explain why <code>-2 &gt; -5</code>.</li>
+    <li><strong>Compute &amp; Predict</strong> sums and differences of signed integers (including subtracting a negative integer, e.g., <code>-4 - (-2)</code>) using zero-pair or number-line reasoning.</li>
+    <li><strong>Justify &amp; Debug</strong> an integer operation in their own words, identifying and correcting common sign misconceptions.</li>
+  </ol>
+  <p><strong>Context of Use:</strong> Evening study at home or after-school corner on a personal/shared smartphone or laptop, in calm 10-minute sessions with pause-and-resume.</p>
+
+  <h2>D2. Learner Persona (Expanded from L5)</h2>
+  <table>
+    <tr><th style="width:24%">Dimension</th><th>Aarav Kulkarni (Class 7, Age 13)</th></tr>
+    <tr><td><strong>Prior Knowledge</strong></td><td>Fluent in whole-number arithmetic (<code>0–100</code>) and familiar with temperatures/elevators, but uncertain about negative ordering (<code>-8</code> vs <code>-3</code>) and unfamiliar with zero pairs (<code>+1 + -1 = 0</code>).</td></tr>
+    <tr><td><strong>Misconception M1</strong></td><td><strong>Magnitude-Over-Sign / Direction Gap:</strong> Treats <code>-8 &gt; -3</code> because <code>8 &gt; 3</code>, moves the wrong direction on the number line, or gets the right magnitude with the wrong sign (<code>2 + (-5) = +3</code>).</td></tr>
+    <tr><td><strong>Misconception M2</strong></td><td><strong>Overgeneralized Sign Rule:</strong> Believes <em>"two negatives always make a negative"</em> (<code>-4 - (-2) = -6</code>) or assumes subtraction always makes the result smaller.</td></tr>
+    <tr><td><strong>Device, Time &amp; Language</strong></td><td>Mid-range Android phone or laptop; 10–15 minutes in the evening (<code>C4</code>); short, warm, conversational everyday English (<code>C3</code>).</td></tr>
+    <tr><td><strong>Motivation &amp; Affect</strong></td><td>High math anxiety and low self-efficacy (<em>"I always mess up the minus signs"</em>); responds well to non-punitive feedback, worked examples, peer debugging, and pre–post confidence tracking.</td></tr>
+  </table>
+
+  <h2>D3. Educational Content (Concept &amp; 5 Task Formats)</h2>
+  <p>
+    Written in a conversational style (<code>P5</code>), the tutor pairs an <strong>Interactive Number Line</strong> (<code>-10</code> to <code>+10</code>, keyboard &amp; button accessible) and a <strong>Two-Color Counter Board</strong> (<code>+1</code> yellow / <code>−1</code> red with Zero-Pair cancellation) directly to <code>M1</code> and <code>M2</code>.
+  </p>
+  <table>
+    <tr><th>#</th><th>Format</th><th>Task Prompt</th><th>Model Answer</th><th>Targeted Feedback (Correct / M1 / M2)</th></tr>
+    <tr><td>1</td><td><strong>Number-Line Jump</strong></td><td>Start at <code>-3</code>. Move to show <code>-3 + 5</code>.</td><td><code>+2</code></td><td><strong>Correct:</strong> Strategy praise + 5 right crosses 0 to +2.<br/><strong>M1:</strong> +5 moves RIGHT (warmer), not left.</td></tr>
+    <tr><td>2</td><td><strong>Counter Board</strong></td><td>Build <code>2 + (-5)</code>, pair zero pairs, see what is left.</td><td><code>-3</code></td><td><strong>Correct:</strong> 2 zero pairs cancel, 3 red (<code>−1</code>) remain.<br/><strong>M1:</strong> Check leftover color (red = negative).</td></tr>
+    <tr><td>3</td><td><strong>Step-by-Step</strong></td><td>Solve <code>-4 - (-2)</code> (Step 1: rewrite; Step 2: value).</td><td><code>-4 + 2</code> → <code>-2</code></td><td><strong>Correct:</strong> Taking away 2 red tiles leaves <code>-2</code>.<br/><strong>M2:</strong> Removing <code>-2</code> debt goes UP to <code>-2</code>, not <code>-6</code>.</td></tr>
+    <tr><td>4</td><td><strong>Error-Spotting</strong></td><td>Rohan wrote <code>-6 - (-3) = -9</code>. Spot the error!</td><td>Treated <code>-(-3)</code> as <code>-3</code> instead of <code>+3</code> (<code>-3</code>).</td><td><strong>Correct:</strong> Sharp eye spotting the sign trap.<br/><strong>M2:</strong> Subtracting <code>-3</code> removes 3 red tiles.</td></tr>
+    <tr><td>5</td><td><strong>Written Explanation</strong></td><td>Why does <code>3 - (-2)</code> give <code>5</code> instead of <code>1</code>?</td><td>Removing <code>-2</code> increases <code>3</code> by <code>2</code>.</td><td><strong>AI-Evaluated:</strong> Classifies into 5 classes + gives warm, specific feedback (with local fallback).</td></tr>
+  </table>
+
+  <h2>D4. Working Application &amp; Screen Map</h2>
+  <p>
+    <strong>URL:</strong> <code>https://et617-24b3972.vercel.app</code> &nbsp;|&nbsp; <strong>About:</strong> <code>/about</code> &nbsp;|&nbsp; <strong>Identity:</strong> <code>ID: 24B3972</code> in every footer and on <code>/about</code>.
+  </p>
+  <ul>
+    <li><strong>State 1 — Welcome / Resume (<code>WELCOME</code>):</strong> Calm overview + <em>Resume Where You Left Off</em> (<code>localStorage</code> persistence).</li>
+    <li><strong>State 2 — Randomized Diagnostic (<code>DIAGNOSTIC</code>, Part 1/4):</strong> Dynamically generated negative comparison &amp; subtraction-of-negative items + unbiased confidence check.</li>
+    <li><strong>State 3 — Targeted Warm-up (<code>WARMUP</code>, Part 2/4):</strong> Shows only the matched visual tool (Number Line or Counter Board) + <em>Try another way</em>.</li>
+    <li><strong>State 4 — Adaptive Practice (<code>PRACTICE</code>, Part 3/4):</strong> All 5 formats, zero repeats, <em>← Review Warm-up</em>, <em>See Similar Example</em>, <em>Gentle Hint</em>, and <em>Try Another Question</em>.</li>
+    <li><strong>State 5 — Adaptive Feedback (<code>ADAPTIVE_FEEDBACK</code>):</strong> <em>Level Up</em>, interactive <em>Visual Walkthrough</em> + <em>Try This Question Again</em>, <em>Quick 60-Sec Refresher</em>, or <em>Quick Double-Check</em>.</li>
+    <li><strong>State 6 — Session Summary (<code>SUMMARY</code>, Part 4/4):</strong> Active study time, tasks completed, and <strong>Pre–Post Confidence Check</strong>.</li>
+    <li><strong>About &amp; Viva Controls (<code>/about</code>):</strong> Identity card, repeatable Viva Demo Controls, and live local <code>eventLog</code> viewer.</li>
+  </ul>
+
+  <div class="page-break"></div>
+  <h2>D5. Two Contrasting Learner Scenarios (Live App Screenshots)</h2>
+  <p><strong>Scenario A — Confident / Correct-Response Path (<code>HARDER_QUESTION</code>):</strong> Starting from 1 correct task, the learner selects <code>+2</code> on the <code>-3 + 5</code> Number Line with 0 hints in &lt;60s. The tutor triggers <strong>Level Up · Challenge Task</strong> and advances difficulty.</p>
+  <div class="screenshot-box">
+    <img src="./screenshots/scenario-a-level-up.png" alt="Scenario A Level Up Challenge Task" />
+    <div class="screenshot-caption">Figure 1: Live Scenario A — Correct response on Number Line triggers Level Up · Challenge Task (ID: 24B3972 in footer).</div>
+  </div>
+
+  <p><strong>Scenario B — Misconception Path (<code>M2_DOUBLE_NEGATIVE</code>):</strong> On <code>-4 - (-2)</code>, entering <code>-4 + 2</code> and <code>-6</code> once triggers <strong>Visual Walkthrough</strong> with the interactive Two-Color Counter Board; repeating <code>-6</code> a second time escalates to <strong>Quick 60-Sec Refresher</strong>.</p>
+  <div class="screenshot-box">
+    <img src="./screenshots/scenario-b-visual-walkthrough.png" alt="Scenario B1 Visual Walkthrough" />
+    <div class="screenshot-caption">Figure 2: Live Scenario B (1st M2 occurrence) — Switches to interactive Two-Color Counter Board + Try This Question Again.</div>
+  </div>
+  <div class="screenshot-box">
+    <img src="./screenshots/scenario-b-prereq-refresher.png" alt="Scenario B2 Quick 60-Sec Refresher" />
+    <div class="screenshot-caption">Figure 3: Live Scenario B (2nd consecutive M2) — Escalates to Quick 60-Sec Refresher with Quick Confidence Builder.</div>
+  </div>
+
+  <h2>D6. AI Functionality Specification (<code>/api/tutor</code>)</h2>
+  <table>
+    <tr><th>Feature</th><th>Model &amp; Input</th><th>Pre-Display Validation</th><th>Fallback</th></tr>
+    <tr>
+      <td><strong>Written Explanation Evaluator</strong> (<code>EVALUATE_EXPLANATION</code>)</td>
+      <td>OpenAI <code>gpt-4o-mini</code> (JSON mode, temp 0.3) receives prompt, concept, model idea, and learner's text; classifies into 5 classes + tone-appropriate feedback.</td>
+      <td>Checks <code>isCorrect</code> boolean, valid 5-class enum, valid <code>explanationQuality</code>, and non-empty feedback (&le;400 chars).</td>
+      <td><code>evaluateWrittenExplanationLocally()</code> (<code>FALLBACK_LOCAL</code>) using deterministic conceptual/misconception rules.</td>
+    </tr>
+    <tr>
+      <td><strong>Adaptive Question Generator</strong> (<code>GENERATE_QUESTION</code>)</td>
+      <td>OpenAI <code>gpt-4o-mini</code> receives <code>targetDifficulty</code>, <code>focusMisconception</code>, <code>preferredFormat</code>, and <code>avoidPrompts</code>.</td>
+      <td><code>validateStructuredQuestion()</code> + integer range <code>[-10, 10]</code> + negative integer check (<code>-\d+</code>) + duplicate prompt rejection + no answer leaks.</td>
+      <td>Non-duplicate curated item from <code>QUESTION_BANK</code> (<code>FALLBACK_BANK</code>).</td>
+    </tr>
+  </table>
+
+  <h2>D7. Pedagogical Rationale (Answering P4's Design Challenge)</h2>
+  <div class="callout">
+    <strong>P4 Decision Rule:</strong> The tutor combines <strong>Profile</strong> (randomized diagnostic), <strong>Performance</strong> (5-class diagnosis + Step 1 rewrite check), and <strong>Interaction</strong> (<code>hintsUsed</code>, worked examples viewed, <code>responseTimeMs</code>) to route to one of four evidence-based outcomes:
+  </div>
+  <div class="pill-grid">
+    <div class="pill-card green">
+      <div class="title">1. Harder Question (Level Up)</div>
+      <div><code>isCorrect</code> + adequate explanation + <code>hints &le; 1</code> + <code>time &le; 60s</code> + <code>consecutiveCorrect &ge; 2</code>.</div>
+    </div>
+    <div class="pill-card amber">
+      <div class="title">2. Alternative Explanation (Visual Walkthrough)</div>
+      <div>1st clear <code>M1</code> or <code>M2</code>, or slow (<code>&gt;60s</code>) unclear wrong response. Pairs <code>M1</code> → Number Line; <code>M2</code> → Counter Board.</div>
+    </div>
+    <div class="pill-card sky">
+      <div class="title">3. Prerequisite Instruction (60-Sec Refresher)</div>
+      <div><code>M1</code>/<code>M2</code> twice in a row, <strong>2 consecutive scaffolded tasks</strong> (hint/example), or diagnostic gap.</div>
+    </div>
+    <div class="pill-card slate">
+      <div class="title">4. Gentle Retry (Quick Double-Check)</div>
+      <div><code>NON_CONCEPTUAL_SLIP</code> (off by 1 or Step 1 slip) or fast <code>UNCLASSIFIED</code>—never triggers remedial lessons.</div>
+    </div>
+  </div>
+  <p><strong>How L5 &amp; C4 Shaped Design:</strong> No internal enum jargon on learner screens, unbiased confidence checks, worked-example toggles, calm skips, strategy praise, pre–post confidence tracking (<code>L5</code>), and 4-part pacing with <em>Save &amp; Pause</em> + <code>localStorage</code> resume (<code>C4</code>).</p>
+
+  <h2>D8. Evaluation Plan</h2>
+  <table>
+    <tr><th>D1 Outcome</th><th>Assessment / Rubric</th><th>Logged Signals (<code>eventLog</code>)</th><th>Success Criterion</th></tr>
+    <tr><td>1. Compare &amp; Represent</td><td>Diagnostic comparison + <code>NUMBER_LINE</code> + <code>q-explain-2</code></td><td><code>DIAGNOSTIC_COMPLETED</code>, <code>RESPONSE_SUBMITTED</code>, <code>responseTimeMs</code></td><td>&ge;80% resolve <code>M1</code> within 1–2 scaffolds.</td></tr>
+    <tr><td>2. Compute &amp; Predict</td><td><code>COUNTER_BOARD</code> + <code>STEP_BY_STEP</code> (Step 1 &amp; 2)</td><td><code>RESPONSE_SUBMITTED</code>, <code>HINT_REQUESTED</code>, <code>ADAPTIVE_OUTCOME</code></td><td>&ge;75% reach Level 2+ in &le;10 active mins.</td></tr>
+    <tr><td>3. Justify &amp; Debug</td><td><code>ERROR_SPOTTING</code> + <code>WRITTEN_EXPLANATION</code></td><td><code>explanationQuality === 'ADEQUATE'</code>, pre–post confidence</td><td>&ge;70% achieve <code>ADEQUATE</code> + neutral/positive confidence shift.</td></tr>
+  </table>
+
+  <h2>AI-Use Log &amp; Reflection</h2>
+  <p>
+    <strong>AI Tools Used:</strong> Antigravity coding assistant (architecture, Next.js/TypeScript implementation, live browser verification, and report generation) and OpenAI <code>gpt-4o-mini</code> (live runtime evaluator &amp; generator via <code>/api/tutor</code>). Complete chat logs are exported as <code>.txt</code> for Moodle.
+  </p>
+  <p>
+    <strong>Reflection:</strong> Live testing caught four critical issues that initial AI generation missed: (1) internal enum names leaking into learner UI, (2) read-only walkthrough tools blocking exploration, (3) AI-generated prompts leaking answers (<code>5 + 3</code>) or omitting negative integers (<code>3 + 4</code>), and (4) Step 1 rewrite inputs needing explicit grading. Fixing each turned the prototype into a reliable, learner-centered tutor.
+  </p>
+
+</body>
+</html>
