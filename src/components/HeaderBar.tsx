@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { ThemeToggle } from './ThemeToggle';
 
 interface HeaderBarProps {
   partIndex: 1 | 2 | 3 | 4;
@@ -63,6 +64,8 @@ export function HeaderBar({
               Save &amp; Pause
             </button>
           )}
+
+          <ThemeToggle />
 
           <Link
             href="/about"

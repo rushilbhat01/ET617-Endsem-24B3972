@@ -3,6 +3,7 @@
 import React, { useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import {
   clearSavedSession,
   createInitialSessionState,
@@ -68,9 +69,12 @@ export default function AboutPage() {
           >
             ← Back to Learning Session
           </Link>
-          <span className="rounded bg-slate-100 px-2 py-0.5 font-mono text-xs font-semibold text-slate-800">
-            ID: 24B3972
-          </span>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <span className="rounded bg-slate-100 px-2 py-0.5 font-mono text-xs font-semibold text-slate-800">
+              ID: 24B3972
+            </span>
+          </div>
         </div>
       </header>
 
