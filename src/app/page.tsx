@@ -71,6 +71,7 @@ export default function HomePage() {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [aiSourceLabel, setAiSourceLabel] = useState<string | null>(null);
+  const [walkthroughVal, setWalkthroughVal] = useState<number>(0);
 
   const questionShownAtRef = useRef<number>(0);
 
@@ -112,6 +113,7 @@ export default function HomePage() {
 
   const resetQuestionInputs = (q: StructuredQuestion) => {
     setNumberLineVal(q.startValue ?? 0);
+    setWalkthroughVal(q.startValue ?? 0);
     setCounterNetVal((q.initialPositives ?? 0) - (q.initialNegatives ?? 0));
     setRewriteInput('');
     setNumericInput('');
@@ -1107,19 +1109,14 @@ export default function HomePage() {
                   {activeToolInFeedback === 'NUMBER_LINE' ? (
                     <NumberLineTool
                       startValue={currentQuestion.startValue ?? 0}
-                      selectedValue={
-                        typeof currentQuestion.correctAnswer === 'number'
-                          ? currentQuestion.correctAnswer
-                          : 0
-                      }
-                      onChange={() => {}}
-                      readOnly
+                      selectedValue={walkthroughVal}
+                      onChange={setWalkthroughVal}
                     />
                   ) : (
                     <CounterBoardTool
-                      initialPositives={2}
-                      initialNegatives={4}
-                      readOnly
+                      key={`walkthrough-${currentQuestion.id}`}
+                      initialPositives={currentQuestion.initialPositives ?? 2}
+                      initialNegatives={currentQuestion.initialNegatives ?? 4}
                     />
                   )}
 
@@ -1183,7 +1180,21 @@ export default function HomePage() {
                 </div>
               )}
 
-              <div className="mt-6 flex justify-end">
+              <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
+                {state.lastEvaluation.outcome === 'ALTERNATIVE_EXPLANATION' && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setState((prev) => ({
+                        ...prev,
+                        screen: 'PRACTICE',
+                      }))
+                    }
+                    className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    Try This Question Again
+                  </button>
+                )}
                 <button
                   type="button"
                   disabled={isSubmitting}
