@@ -548,9 +548,24 @@ export default function HomePage() {
     state.lastEvaluation?.recommendedTool ??
     'NUMBER_LINE';
 
+  const prereqKey =
+    state.lastEvaluation?.misconception === 'M1_MAGNITUDE_SIGN'
+      ? 'ORDERING_DIRECTION'
+      : state.lastEvaluation?.misconception === 'M2_DOUBLE_NEGATIVE'
+      ? 'ZERO_PAIRS_SUBTRACTION'
+      : currentQuestion.prerequisite;
+
   const prereqLesson =
-    PREREQUISITE_LESSONS[currentQuestion.prerequisite] ??
+    PREREQUISITE_LESSONS[prereqKey] ??
     PREREQUISITE_LESSONS.ZERO_PAIRS_SUBTRACTION;
+
+  const outcomeBadgeLabel: Record<string, string> = {
+    HARDER_QUESTION: 'Level Up · Challenge Task',
+    ALTERNATIVE_EXPLANATION: 'Visual Walkthrough',
+    PREREQUISITE_INSTRUCTION: 'Quick 60-Sec Refresher',
+    GENTLE_RETRY: 'Quick Double-Check',
+    CONTINUE_SAME_LEVEL: 'On Track',
+  };
 
   const formatMinutesSec = (sec: number) => {
     const m = Math.floor(sec / 60);
@@ -1039,13 +1054,13 @@ export default function HomePage() {
                       : 'bg-amber-100 text-amber-900'
                   }`}
                 >
-                  Adaptive Path:{' '}
-                  {state.lastEvaluation.outcome.replace(/_/g, ' ')}
+                  {outcomeBadgeLabel[state.lastEvaluation.outcome] ?? 'Tutor Feedback'}
                 </span>
-                <span className="text-xs text-slate-500">
-                  Classification: {state.lastEvaluation.misconception}
-                  {aiSourceLabel ? ` · ${aiSourceLabel}` : ''}
-                </span>
+                {aiSourceLabel && (
+                  <span className="text-xs text-slate-500">
+                    {aiSourceLabel}
+                  </span>
+                )}
               </div>
 
               <h1 className="mt-3 text-xl font-bold text-slate-900">
@@ -1055,9 +1070,9 @@ export default function HomePage() {
                 {state.lastEvaluation.feedbackMessage}
               </p>
 
-              {/* Transparent decision rule reason */}
+              {/* Transparent, learner-friendly reason */}
               <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600 border border-slate-200">
-                <strong>Why the tutor chose this step:</strong>{' '}
+                <strong>Next step:</strong>{' '}
                 {state.lastEvaluation.decisionReason}
               </p>
 
@@ -1225,11 +1240,11 @@ export default function HomePage() {
                   • Valid responses: <strong>{state.misconceptionCounts.NONE}</strong>
                 </li>
                 <li>
-                  • M1 (Direction / Magnitude) scaffolds:{' '}
+                  • Direction &amp; sign practice steps:{' '}
                   <strong>{state.misconceptionCounts.M1_MAGNITUDE_SIGN}</strong>
                 </li>
                 <li>
-                  • M2 (Subtracting Negatives) scaffolds:{' '}
+                  • Subtracting-negatives practice steps:{' '}
                   <strong>{state.misconceptionCounts.M2_DOUBLE_NEGATIVE}</strong>
                 </li>
                 <li>

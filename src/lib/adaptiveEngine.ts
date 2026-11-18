@@ -225,15 +225,15 @@ export function buildEvaluationResult(
     outcome = 'PREREQUISITE_INSTRUCTION';
     feedbackTitle = 'Quick 60-Second Prerequisite Reset';
     decisionReason =
-      nextSameCount >= 2
-        ? `Same misconception (${misconception}) appeared ${nextSameCount} times in a row.`
-        : `Diagnostic check-in indicated a foundational gap (${state.diagnosticGap}).`;
+      misconception === 'M1_MAGNITUDE_SIGN'
+        ? 'Let us take 60 seconds to refresh how negative numbers sit on the number line before moving on.'
+        : 'Let us take 60 seconds to refresh zero pairs and subtracting negatives before moving on.';
   } else {
     outcome = 'ALTERNATIVE_EXPLANATION';
     feedbackTitle = 'Let Us Look at This Visually';
-    decisionReason = `First clear occurrence of ${misconception}; switching to ${
+    decisionReason = `Switching to the ${
       recommendedTool === 'NUMBER_LINE' ? 'Number Line' : 'Zero-Pair Counters'
-    } scaffold.`;
+    } so you can see how the signs work step by step.`;
   }
 
   const feedbackMessage =
