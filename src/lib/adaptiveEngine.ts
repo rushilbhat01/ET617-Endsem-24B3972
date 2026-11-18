@@ -132,12 +132,14 @@ export function buildEvaluationResult(
   misconception: MisconceptionType,
   state: TutorSessionState,
   explanationQuality?: 'ADEQUATE' | 'PARTIAL' | 'MISCONCEPTION',
-  customFeedbackMessage?: string
+  customFeedbackMessage?: string,
+  responseTimeMs?: number
 ): EvaluationResult {
   const recommendedTool = recommendedToolForMisconception(
     misconception,
     question.prerequisite
   );
+  const isSlowResponse = (responseTimeMs ?? 0) > 60_000;
 
   // Evidence-based adaptive decision rule
   let outcome: AdaptiveOutcome = 'CONTINUE_SAME_LEVEL';
@@ -151,6 +153,7 @@ export function buildEvaluationResult(
 
     if (
       adequateExplanation &&
+      !isSlowResponse &&
       state.hintsUsedCurrentTask <= 1 &&
       state.consecutiveCorrect >= 1 &&
       state.difficulty < 3
@@ -162,12 +165,13 @@ export function buildEvaluationResult(
     } else {
       outcome = 'CONTINUE_SAME_LEVEL';
       feedbackTitle = 'Great Job — Keep Going!';
-      decisionReason =
-        state.hintsUsedCurrentTask > 1
-          ? 'Correct with multiple hints; consolidating at the same level.'
-          : state.difficulty >= 3
-          ? 'Already at the highest challenge tier.'
-          : 'First correct response in streak; one more for a level up.';
+      decisionReason = isSlowResponse
+        ? 'You took your time and got it right! Let us build a bit more comfort at this level before stepping up.'
+        : state.hintsUsedCurrentTask > 1
+        ? 'Correct with multiple hints; consolidating at the same level.'
+        : state.difficulty >= 3
+        ? 'Already at the highest challenge tier.'
+        : 'First correct response in streak; one more for a level up.';
     }
 
     return {
@@ -185,7 +189,7 @@ export function buildEvaluationResult(
   // Incorrect response handling
   if (
     misconception === 'NON_CONCEPTUAL_SLIP' ||
-    misconception === 'UNCLASSIFIED'
+    (misconception === 'UNCLASSIFIED' && !isSlowResponse)
   ) {
     outcome = 'GENTLE_RETRY';
     feedbackTitle =
@@ -221,7 +225,10 @@ export function buildEvaluationResult(
     (misconception === 'M2_DOUBLE_NEGATIVE' &&
       state.diagnosticGap === 'ZERO_PAIRS_SUBTRACTION');
 
-  if (nextSameCount >= 2 || (hasDiagnosticGap && state.completedTaskIds.length === 0)) {
+  if (
+    misconception !== 'UNCLASSIFIED' &&
+    (nextSameCount >= 2 || (hasDiagnosticGap && state.completedTaskIds.length === 0))
+  ) {
     outcome = 'PREREQUISITE_INSTRUCTION';
     feedbackTitle = 'Quick 60-Second Prerequisite Reset';
     decisionReason =
@@ -231,9 +238,13 @@ export function buildEvaluationResult(
   } else {
     outcome = 'ALTERNATIVE_EXPLANATION';
     feedbackTitle = 'Let Us Look at This Visually';
-    decisionReason = `Switching to the ${
-      recommendedTool === 'NUMBER_LINE' ? 'Number Line' : 'Zero-Pair Counters'
-    } so you can see how the signs work step by step.`;
+    decisionReason = isSlowResponse
+      ? `You spent some extra time on this one—let us look at it visually with the ${
+          recommendedTool === 'NUMBER_LINE' ? 'Number Line' : 'Zero-Pair Counters'
+        } to make it clearer.`
+      : `Switching to the ${
+          recommendedTool === 'NUMBER_LINE' ? 'Number Line' : 'Zero-Pair Counters'
+        } so you can see how the signs work step by step.`;
   }
 
   const feedbackMessage =
@@ -260,7 +271,8 @@ export function buildEvaluationResult(
 export function evaluateAndDecide(
   question: StructuredQuestion,
   rawAnswer: string,
-  state: TutorSessionState
+  state: TutorSessionState,
+  responseTimeMs?: number
 ): EvaluationResult {
   const trimmed = rawAnswer.trim();
   let isCorrect = false;
@@ -310,7 +322,9 @@ export function evaluateAndDecide(
     isCorrect,
     misconception,
     state,
-    explanationQuality
+    explanationQuality,
+    undefined,
+    responseTimeMs
   );
 }
 

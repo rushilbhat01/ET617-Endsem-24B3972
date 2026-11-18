@@ -311,7 +311,12 @@ export default function HomePage() {
     if (!rawAnswer) return;
 
     const responseTimeMs = Date.now() - questionShownAtRef.current;
-    let evaluation = evaluateAndDecide(currentQuestion, rawAnswer, state);
+    let evaluation = evaluateAndDecide(
+      currentQuestion,
+      rawAnswer,
+      state,
+      responseTimeMs
+    );
     let sourceTag: string | null = null;
 
     if (currentQuestion.format === 'WRITTEN_EXPLANATION') {
@@ -338,7 +343,8 @@ export default function HomePage() {
             data.misconception,
             state,
             data.explanationQuality,
-            data.feedbackMessage
+            data.feedbackMessage,
+            responseTimeMs
           );
         }
       } catch {
